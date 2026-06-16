@@ -274,23 +274,51 @@ function ShipDetailModal({ order, onClose, lang }: { order: BuyerOrder; onClose:
 }
 
 function exportToExcel(orders: BuyerOrder[]) {
-  // Build CSV content
-  const headers = [
-    "No. Order","Nama Customer","Alamat Lengkap","Kota","Nama Barang",
-    "Jenis","Ukuran","Qty","Jasa Kirim","No. Resi","Status","Nilai",
-  ];
-  const rows = orders.map((o) => [
-    o.id, o.customerName, `"${o.address}"`, o.city, o.itemName,
-    o.itemType, o.size, o.quantity, o.shippingService,
-    o.tracking !== "-" ? o.tracking : "Belum ada resi",
-    o.shippingStatus, o.totalPrice,
-  ]);
-  const csvContent = [headers, ...rows].map((r) => r.join(",")).join("\n");
-  const blob = new Blob(["﻿" + csvContent], { type: "text/csv;charset=utf-8;" });
+  // Build proper Excel-compatible HTML table saved as .xls
+  const fmt = (n: number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(n);
+  const rows = orders.map((o) => `
+    <tr>
+      <td>${o.id}</td>
+      <td>${o.customerName}</td>
+      <td>${o.address}</td>
+      <td>${o.city}</td>
+      <td>${o.itemName}</td>
+      <td>${o.itemType}</td>
+      <td>${o.size}</td>
+      <td>${o.quantity}</td>
+      <td>${o.shippingService}</td>
+      <td>${o.tracking !== "-" ? o.tracking : "Belum ada resi"}</td>
+      <td>${o.shippingStatus}</td>
+      <td>${fmt(o.totalPrice)}</td>
+      <td>${o.orderDate}</td>
+    </tr>`).join("");
+
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="UTF-8"><meta name=ProgId content=Excel.Sheet><meta name=Generator content="Microsoft Excel 11">
+<style>
+  table { border-collapse: collapse; }
+  th { background-color: #1e2a4a; color: white; font-weight: bold; padding: 6px 10px; border: 1px solid #ccc; }
+  td { padding: 5px 10px; border: 1px solid #ccc; }
+  tr:nth-child(even) td { background-color: #f4f6fb; }
+</style>
+</head><body>
+<h2 style="font-family:Arial;color:#1e2a4a;">Luckycatsply — Product to Ship</h2>
+<p style="font-family:Arial;color:#6b7280;">Tanggal export: ${new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
+<table>
+  <thead><tr>
+    <th>No. Order</th><th>Nama Customer</th><th>Alamat Lengkap</th><th>Kota</th>
+    <th>Nama Barang</th><th>Jenis</th><th>Ukuran</th><th>Qty</th>
+    <th>Jasa Kirim</th><th>No. Resi</th><th>Status</th><th>Nilai</th><th>Tgl Order</th>
+  </tr></thead>
+  <tbody>${rows}</tbody>
+</table>
+</body></html>`;
+
+  const blob = new Blob([html], { type: "application/vnd.ms-excel;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `luckycatsply_ship_${new Date().toISOString().split("T")[0]}.csv`;
+  a.download = `luckycatsply_ship_${new Date().toISOString().split("T")[0]}.xls`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -298,7 +326,7 @@ function exportToExcel(orders: BuyerOrder[]) {
 const toShipOrders = buyerOrders.filter((o) => ["Menunggu", "Diproses"].includes(o.shippingStatus));
 const shippedOrders = buyerOrders.filter((o) => ["Dikirim", "Tiba", "Selesai"].includes(o.shippingStatus));
 
-export function ShipTab({ lang }: { lang: Lang }) {
+export function ShipTab({ lang, onBack }: { lang: Lang; onBack?: () => void }) {
   const [selectedOrder, setSelectedOrder] = useState<BuyerOrder | null>(null);
 
   const TABLE_COLS = [
@@ -365,6 +393,12 @@ export function ShipTab({ lang }: { lang: Lang }) {
 
   return (
     <div className="space-y-6">
+      {/* Back button */}
+      {onBack && (
+        <button onClick={onBack} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg" style={{ background: "#f3f4f6", border: "none", cursor: "pointer", color: "#374151", fontSize: "0.8rem", fontWeight: 600 }}>
+          <ArrowLeft className="w-3.5 h-3.5" /> {tr("back", lang)} — Dashboard
+        </button>
+      )}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 style={{ fontSize: "1.15rem", fontWeight: 700, color: "#1a1d2e" }}>{tr("productToShipTitle", lang)}</h2>

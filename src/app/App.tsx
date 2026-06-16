@@ -74,13 +74,15 @@ export default function App() {
   const handleLogout = () => { setUserRole(null); setProfileOpen(false); setSidebarOpen(false); };
   const navigate = (tab: "buyer" | "seller") => setActiveTab(tab);
 
+  const goBack = () => setActiveTab("dashboard");
+
   const renderTab = () => {
     switch (activeTab) {
       case "dashboard": return <DashboardTab onNavigate={navigate} userRole={userRole} lang={lang} />;
-      case "buyer": return <BuyerTab lang={lang} />;
-      case "seller": return <SellerTab lang={lang} />;
-      case "ship": return <ShipTab lang={lang} />;
-      case "marketing": return <MarketingTab lang={lang} />;
+      case "buyer": return <BuyerTab lang={lang} onBack={goBack} />;
+      case "seller": return <SellerTab lang={lang} onBack={goBack} />;
+      case "ship": return <ShipTab lang={lang} onBack={goBack} />;
+      case "marketing": return <MarketingTab lang={lang} onBack={goBack} />;
       default: return <DashboardTab onNavigate={navigate} userRole={userRole} lang={lang} />;
     }
   };

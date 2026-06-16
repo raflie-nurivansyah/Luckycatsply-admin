@@ -5,14 +5,15 @@ export type ItemCategory =
   | "Mens" | "Women" | "Clothes" | "Pants"
   | "Bags" | "Electronics" | "Miscellaneous";
 
-export type FrameCount = 1 | 2 | 3 | 4 | 5;
+export type FrameCount = 1 | 2 | 3 | 4 | 5 | 6;
 
 /** One slot inside a photo frame */
 export interface FrameSlot {
-  positionKey: string;   // e.g. "kiri atas"
-  positionLabel: string; // e.g. "Kiri Atas"
+  positionKey: string;
+  positionLabel: string;
   photo: string | null;
   price: number;
+  quantity: number;
 }
 
 /** Returns the slot template for a given frame count */
@@ -23,12 +24,14 @@ export function getFrameSlots(count: FrameCount): FrameSlot[] {
     3: ["kiri atas", "kanan atas", "bawah"],
     4: ["kiri atas", "kanan atas", "kiri bawah", "kanan bawah"],
     5: ["kiri atas", "kanan atas", "kiri bawah", "kanan bawah", "bawah"],
+    6: ["kiri atas", "tengah atas", "kanan atas", "kiri bawah", "tengah bawah", "kanan bawah"],
   };
   return templates[count].map((k) => ({
     positionKey: k,
     positionLabel: k.split(" ").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
     photo: null,
     price: 0,
+    quantity: 1,
   }));
 }
 
@@ -83,6 +86,7 @@ export interface MarketingItem {
   description: string;
   uploadedAt: string;
   uploaded: boolean;
+  totalQuantity: number;
 }
 
 export interface ChatMessage {
@@ -416,14 +420,15 @@ export const marketingItems: MarketingItem[] = [
     sizes: [{ size: "M", quantity: 2 }, { size: "L", quantity: 1 }],
     frameCount: 4,
     frameSlots: [
-      { positionKey: "kiri atas", positionLabel: "Kiri Atas", photo: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=300&h=300&fit=crop", price: 185000 },
-      { positionKey: "kanan atas", positionLabel: "Kanan Atas", photo: "https://images.unsplash.com/photo-1620012253295-c15cc3e65df4?w=300&h=300&fit=crop", price: 165000 },
-      { positionKey: "kiri bawah", positionLabel: "Kiri Bawah", photo: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=300&h=300&fit=crop", price: 145000 },
-      { positionKey: "kanan bawah", positionLabel: "Kanan Bawah", photo: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=300&h=300&fit=crop", price: 195000 },
+      { positionKey: "kiri atas", positionLabel: "Kiri Atas", photo: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=300&h=300&fit=crop", price: 185000, quantity: 1 },
+      { positionKey: "kanan atas", positionLabel: "Kanan Atas", photo: "https://images.unsplash.com/photo-1620012253295-c15cc3e65df4?w=300&h=300&fit=crop", price: 165000, quantity: 2 },
+      { positionKey: "kiri bawah", positionLabel: "Kiri Bawah", photo: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=300&h=300&fit=crop", price: 145000, quantity: 1 },
+      { positionKey: "kanan bawah", positionLabel: "Kanan Bawah", photo: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=300&h=300&fit=crop", price: 195000, quantity: 3 },
     ],
     description: "Koleksi kemeja flannel vintage pilihan. Pilih sesuai posisi yang kamu inginkan!",
     uploadedAt: "2024-06-10",
     uploaded: true,
+    totalQuantity: 7,
   },
   {
     id: "MKT-002",
@@ -433,12 +438,13 @@ export const marketingItems: MarketingItem[] = [
     sizes: [{ size: "28", quantity: 1 }, { size: "30", quantity: 2 }],
     frameCount: 2,
     frameSlots: [
-      { positionKey: "kiri", positionLabel: "Kiri", photo: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=300&h=400&fit=crop", price: 320000 },
-      { positionKey: "kanan", positionLabel: "Kanan", photo: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=300&h=400&fit=crop", price: 285000 },
+      { positionKey: "kiri", positionLabel: "Kiri", photo: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=300&h=400&fit=crop", price: 320000, quantity: 1 },
+      { positionKey: "kanan", positionLabel: "Kanan", photo: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=300&h=400&fit=crop", price: 285000, quantity: 2 },
     ],
     description: "Levis 501 original, fading alami yang memberikan karakter vintage.",
     uploadedAt: "2024-06-09",
     uploaded: true,
+    totalQuantity: 3,
   },
   {
     id: "MKT-003",
@@ -448,10 +454,11 @@ export const marketingItems: MarketingItem[] = [
     sizes: [{ size: "One Size", quantity: 3 }],
     frameCount: 1,
     frameSlots: [
-      { positionKey: "tengah", positionLabel: "Tengah", photo: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&h=400&fit=crop", price: 520000 },
+      { positionKey: "tengah", positionLabel: "Tengah", photo: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&h=400&fit=crop", price: 520000, quantity: 3 },
     ],
     description: "Tas kulit genuine, warna coklat klasik. Ada dustbag original.",
     uploadedAt: "2024-06-08",
     uploaded: false,
+    totalQuantity: 3,
   },
 ];

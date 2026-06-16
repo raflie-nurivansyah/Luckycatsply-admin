@@ -9,7 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { Package, ShoppingCart, ArrowDownCircle, DollarSign, ChevronRight, ArrowUpRight } from "lucide-react";
+import { Package, ShoppingCart, ArrowDownCircle, DollarSign, ChevronRight, ArrowUpRight, Download } from "lucide-react";
 import { Lang, tr } from "./i18n";
 
 type UserRole = "admin" | "buyer_admin" | "seller_admin" | "marketing_admin";
@@ -108,6 +108,10 @@ export function StatusBadge({ status }: { status: string }) {
     Dikirim: { bg: "#ede9fe", color: "#7c3aed" },
     Tiba: { bg: "#d1fae5", color: "#059669" },
     Selesai: { bg: "#f0fdf4", color: "#16a34a" },
+    "Sudah Cair": { bg: "#d1fae5", color: "#059669" },
+    Disbursed: { bg: "#d1fae5", color: "#059669" },
+    "Belum Cair": { bg: "#fef3c7", color: "#d97706" },
+    Pending: { bg: "#fef3c7", color: "#d97706" },
   };
   const style = map[status] || { bg: "#f3f4f6", color: "#6b7280" };
   return (
@@ -142,7 +146,34 @@ export function DashboardTab({ onNavigate, userRole, lang }: DashboardTabProps) 
   const canSeePurchase = userRole === "admin" || userRole === "seller_admin";
 
   // Table column headers
-  const TABLE_COLS = ["ID", tr("customer", lang), "Item", tr("totalValue", lang), tr("type", lang), tr("status", lang)];
+  const TABLE_COLS = ["ID", tr("customer", lang), "Item", tr("totalValue", lang), tr("type", lang), tr("status", lang), tr("orderDate", lang)];
+
+  // Combined recent transactions (buyer + seller)
+  const recentBuyer = buyerOrders.slice(0, 5).map((o) => ({
+    id: o.id, customer: o.customerName, item: o.itemName,
+    value: o.totalPrice, type: lang === "id" ? "Penjualan" : "Sales",
+    status: o.shippingStatus, date: o.orderDate, txType: "buyer" as const,
+  }));
+  const recentSeller = sellerItems.slice(0, 3).map((s) => ({
+    id: s.id, customer: s.customerName, item: s.itemName,
+    value: s.sellingPrice * s.quantity, type: lang === "id" ? "Pembelian Barang" : "Stock In",
+    status: s.disbursed ? (lang === "id" ? "Sudah Cair" : "Disbursed") : (lang === "id" ? "Belum Cair" : "Pending"),
+    date: s.submitDate, txType: "seller" as const,
+  }));
+  const allRecent = [...recentBuyer, ...recentSeller]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 8);
+
+  const exportTransactionHistory = () => {
+    const headers = ["ID", "Customer", "Item", "Nilai", "Tipe", "Status", "Tanggal"];
+    const rows = allRecent.map((r) => [r.id, r.customer, `"${r.item}"`, r.value, r.type, r.status, r.date]);
+    const csvContent = [headers, ...rows].map((r) => r.join(",")).join("\n");
+    const blob = new Blob(["﻿" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `luckycatsply_transaksi_${new Date().toISOString().split("T")[0]}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="space-y-6">
@@ -481,99 +512,65 @@ export function DashboardTab({ onNavigate, userRole, lang }: DashboardTabProps) 
           className="px-6 py-4 flex items-center justify-between"
           style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
         >
-          <h3 style={{ fontSize: "0.92rem", fontWeight: 700, color: "#1a1d2e" }}>
-            {tr("recentTransactions", lang)}
-          </h3>
-          {canSeeSales && (
+          <div className="flex items-center gap-3 flex-wrap">
+            <h3 style={{ fontSize: "0.92rem", fontWeight: 700, color: "#1a1d2e" }}>
+              {tr("recentTransactions", lang)}
+            </h3>
+            <span style={{ fontSize: "0.72rem", color: "#9ca3af" }}>—</span>
+            <span style={{ fontSize: "0.72rem", color: "#6b7280" }}>
+              {lang === "id" ? "Buyer & Seller" : "Buyer & Seller"}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
             <button
-              onClick={() => onNavigate?.("buyer")}
-              className="flex items-center gap-1"
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "#2563eb",
-                fontSize: "0.78rem",
-                fontWeight: 600,
-              }}
+              onClick={exportTransactionHistory}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg"
+              style={{ background: "#166534", color: "#fff", fontSize: "0.75rem", fontWeight: 600, border: "none", cursor: "pointer" }}
             >
-              {tr("viewAll", lang)} <ChevronRight className="w-3.5 h-3.5" />
+              <Download className="w-3 h-3" /> Export CSV
             </button>
-          )}
+            {canSeeSales && (
+              <button
+                onClick={() => onNavigate?.("buyer")}
+                className="flex items-center gap-1"
+                style={{ background: "none", border: "none", cursor: "pointer", color: "#2563eb", fontSize: "0.78rem", fontWeight: 600 }}
+              >
+                {tr("viewAll", lang)} <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
         <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 640 }}>
             <thead>
               <tr style={{ background: "#f8fafc" }}>
                 {TABLE_COLS.map((h) => (
-                  <th
-                    key={h}
-                    style={{
-                      padding: "10px 16px",
-                      textAlign: "left",
-                      fontSize: "0.7rem",
-                      fontWeight: 600,
-                      color: "#6b7280",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                      borderBottom: "1px solid rgba(0,0,0,0.06)",
-                    }}
-                  >
+                  <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: "0.68rem", fontWeight: 600, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.04em", borderBottom: "1px solid rgba(0,0,0,0.06)", whiteSpace: "nowrap" }}>
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {buyerOrders.slice(0, 5).map((order, i) => (
-                <tr
-                  key={order.id}
-                  style={{ borderBottom: i < 4 ? "1px solid rgba(0,0,0,0.04)" : "none" }}
-                >
-                  <td
-                    style={{
-                      padding: "12px 16px",
-                      fontSize: "0.75rem",
-                      color: "#6b7280",
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    {order.id}
+              {allRecent.map((row, i) => (
+                <tr key={row.id} style={{ borderBottom: i < allRecent.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none" }}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "#f9fafb")}
+                  onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "")}>
+                  <td style={{ padding: "11px 14px", fontSize: "0.72rem", color: "#6b7280", fontFamily: "monospace", whiteSpace: "nowrap" }}>{row.id}</td>
+                  <td style={{ padding: "11px 14px", fontSize: "0.82rem", color: "#1a1d2e", fontWeight: 600, whiteSpace: "nowrap" }}>{row.customer}</td>
+                  <td style={{ padding: "11px 14px", fontSize: "0.82rem", color: "#374151" }}>{row.item}</td>
+                  <td style={{ padding: "11px 14px", fontSize: "0.82rem", color: row.txType === "buyer" ? "#16a34a" : "#dc2626", fontWeight: 700, whiteSpace: "nowrap" }}>
+                    {formatRupiah(row.value)}
                   </td>
-                  <td
-                    style={{
-                      padding: "12px 16px",
-                      fontSize: "0.85rem",
-                      color: "#1a1d2e",
-                      fontWeight: 500,
-                    }}
-                  >
-                    {order.customerName}
-                  </td>
-                  <td style={{ padding: "12px 16px", fontSize: "0.85rem", color: "#374151" }}>
-                    {order.itemName}
-                  </td>
-                  <td
-                    style={{
-                      padding: "12px 16px",
-                      fontSize: "0.85rem",
-                      color: "#16a34a",
-                      fontWeight: 700,
-                    }}
-                  >
-                    {formatRupiah(order.totalPrice)}
-                  </td>
-                  <td style={{ padding: "12px 16px" }}>
-                    <span
-                      className="px-2 py-1 rounded-full"
-                      style={{ background: "#dbeafe", color: "#1d4ed8", fontSize: "0.7rem", fontWeight: 600 }}
-                    >
-                      {tr("saleBadge", lang)}
+                  <td style={{ padding: "11px 14px" }}>
+                    <span className="px-2 py-0.5 rounded-full" style={{ background: row.txType === "buyer" ? "#dbeafe" : "#ede9fe", color: row.txType === "buyer" ? "#1d4ed8" : "#7c3aed", fontSize: "0.68rem", fontWeight: 700, whiteSpace: "nowrap" }}>
+                      {row.type}
                     </span>
                   </td>
-                  <td style={{ padding: "12px 16px" }}>
-                    <StatusBadge status={order.shippingStatus} />
+                  <td style={{ padding: "11px 14px" }}>
+                    <StatusBadge status={row.status} />
                   </td>
+                  <td style={{ padding: "11px 14px", fontSize: "0.72rem", color: "#6b7280", whiteSpace: "nowrap" }}>{row.date}</td>
                 </tr>
               ))}
             </tbody>

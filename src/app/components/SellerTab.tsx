@@ -72,7 +72,7 @@ function SellerDetailModal({ item, onClose, lang }: { item: SellerItem; onClose:
   );
 }
 
-export function SellerTab({ lang }: { lang: Lang }) {
+export function SellerTab({ lang, onBack }: { lang: Lang; onBack?: () => void }) {
   const [items, setItems] = useState(sellerItems);
   const [selectedItem, setSelectedItem] = useState<SellerItem | null>(null);
   const [search, setSearch] = useState("");
@@ -103,6 +103,12 @@ export function SellerTab({ lang }: { lang: Lang }) {
 
   return (
     <div className="space-y-4">
+      {/* Back button */}
+      {onBack && (
+        <button onClick={onBack} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg" style={{ background: "#f3f4f6", border: "none", cursor: "pointer", color: "#374151", fontSize: "0.8rem", fontWeight: 600 }}>
+          <ArrowLeft className="w-3.5 h-3.5" /> {tr("back", lang)} — Dashboard
+        </button>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
@@ -184,7 +190,7 @@ export function SellerTab({ lang }: { lang: Lang }) {
                           {item.disbursed ? <><CheckSquare className="w-3 h-3" /> {tr("disbursed", lang)}</> : <><Square className="w-3 h-3" /> {tr("notDisbursed", lang)}</>}
                         </button>
                       </td>
-                      <td style={{ padding: "11px 12px", position: "sticky", right: 0, background: "inherit" }}>
+                      <td style={{ padding: "11px 12px", position: "sticky", right: 0, background: "#fff", boxShadow: "-3px 0 8px rgba(0,0,0,0.06)" }}>
                         <button onClick={() => setSelectedItem(item)}
                           className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg whitespace-nowrap"
                           style={{ background: "#ede9fe", color: "#7c3aed", fontSize: "0.72rem", fontWeight: 700, border: "none", cursor: "pointer" }}>

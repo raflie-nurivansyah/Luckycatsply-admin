@@ -93,7 +93,7 @@ function DetailModal({ order, onClose, lang }: { order: BuyerOrder; onClose: () 
   );
 }
 
-export function BuyerTab({ lang }: { lang: Lang }) {
+export function BuyerTab({ lang, onBack }: { lang: Lang; onBack?: () => void }) {
   const [activeSection, setActiveSection] = useState<"orders" | "chat">("orders");
   const [selectedOrder, setSelectedOrder] = useState<BuyerOrder | null>(null);
   const [search, setSearch] = useState("");
@@ -121,6 +121,12 @@ export function BuyerTab({ lang }: { lang: Lang }) {
 
   return (
     <div className="space-y-4">
+      {/* Back button */}
+      {onBack && (
+        <button onClick={onBack} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg" style={{ background: "#f3f4f6", border: "none", cursor: "pointer", color: "#374151", fontSize: "0.8rem", fontWeight: 600 }}>
+          <ArrowLeft className="w-3.5 h-3.5" /> {tr("back", lang)} — Dashboard
+        </button>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
@@ -190,7 +196,7 @@ export function BuyerTab({ lang }: { lang: Lang }) {
                       </td>
                       <td style={{ padding: "11px 12px", fontSize: "0.72rem", color: "#6b7280", whiteSpace: "nowrap" }}>{order.orderDate}</td>
                       <td style={{ padding: "11px 12px" }}><StatusBadge status={order.shippingStatus} /></td>
-                      <td style={{ padding: "11px 12px", position: "sticky", right: 0, background: "inherit" }}>
+                      <td style={{ padding: "11px 12px", position: "sticky", right: 0, background: "#fff", boxShadow: "-3px 0 8px rgba(0,0,0,0.06)" }}>
                         <button onClick={() => setSelectedOrder(order)}
                           className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg whitespace-nowrap"
                           style={{ background: "#dbeafe", color: "#2563eb", fontSize: "0.72rem", fontWeight: 700, border: "none", cursor: "pointer" }}>
