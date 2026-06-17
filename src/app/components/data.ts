@@ -89,12 +89,71 @@ export interface MarketingItem {
   totalQuantity: number;
 }
 
+export type ReturnReason =
+  | "Barang Rusak / Damaged"
+  | "Barang Salah / Wrong Item"
+  | "Item Kurang / Missing Item"
+  | "Kualitas Tidak Sesuai / Quality Issue"
+  | "Lainnya / Other";
+
+export interface ReturnRefundItem {
+  id: string;
+  orderId: string;
+  customerName: string;
+  itemName: string;
+  reason: ReturnReason;
+  description: string;
+  photos: string[];
+  videoProof: string | null;
+  paymentProof: string | null;
+  status: "Menunggu Review" | "Diproses" | "Disetujui" | "Ditolak";
+  submittedAt: string;
+  totalPrice: number;
+}
+
+export const returnRefundData: ReturnRefundItem[] = [
+  {
+    id: "REF-001",
+    orderId: "ORD-004",
+    customerName: "Rina Marlina",
+    itemName: "Dress Batik",
+    reason: "Kualitas Tidak Sesuai / Quality Issue",
+    description: "Jahitan pada bagian kerah tidak rapi dan ada lubang kecil di bagian samping. Tidak sesuai dengan deskripsi produk.",
+    photos: [
+      "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&h=400&fit=crop",
+    ],
+    videoProof: null,
+    paymentProof: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=600&fit=crop",
+    status: "Menunggu Review",
+    submittedAt: "2024-06-08",
+    totalPrice: 275000,
+  },
+  {
+    id: "REF-002",
+    orderId: "ORD-002",
+    customerName: "Sari Dewi",
+    itemName: "Celana Jeans Levis",
+    reason: "Barang Salah / Wrong Item",
+    description: "Saya pesan ukuran 28 tapi yang datang ukuran 30. Tolong ditukar atau refund.",
+    photos: [
+      "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=400&fit=crop",
+    ],
+    videoProof: null,
+    paymentProof: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=600&fit=crop",
+    status: "Diproses",
+    submittedAt: "2024-06-10",
+    totalPrice: 320000,
+  },
+];
+
 export interface ChatMessage {
   id: string;
   sender: "customer" | "admin";
   text: string;
   time: string;
-  orderRef?: string; // e.g. "ORD-001"
+  orderRef?: string;
+  negotiationOffer?: number;
 }
 
 export interface ChatThread {
@@ -105,6 +164,7 @@ export interface ChatThread {
   lastTime: string;
   unread: number;
   messages: ChatMessage[];
+  threadType: "buyer" | "seller";
 }
 
 export const buyerOrders: BuyerOrder[] = [
@@ -340,12 +400,9 @@ export const allTransactionData: TransactionDay[] = generateDailyData();
 
 export const buyerChatThreads: ChatThread[] = [
   {
-    id: "CHT-B1",
-    customerName: "Budi Santoso",
-    avatar: "BS",
-    lastMessage: "Kak, orderan saya sudah dikirim belum?",
-    lastTime: "10:32",
-    unread: 2,
+    id: "CHT-B1", threadType: "buyer",
+    customerName: "Budi Santoso", avatar: "BS",
+    lastMessage: "Kak, orderan saya sudah dikirim belum?", lastTime: "10:32", unread: 2,
     messages: [
       { id: "m1", sender: "customer", text: "Halo kak, mau tanya orderan saya ORD-001 sudah diproses belum ya?", time: "10:15", orderRef: "ORD-001" },
       { id: "m2", sender: "admin", text: "Halo Kak Budi! Orderan ORD-001 sudah kami proses dan sedang dalam perjalanan ya kak 😊", time: "10:20" },
@@ -353,12 +410,9 @@ export const buyerChatThreads: ChatThread[] = [
     ],
   },
   {
-    id: "CHT-B2",
-    customerName: "Sari Dewi",
-    avatar: "SD",
-    lastMessage: "Oke kak makasih infonya!",
-    lastTime: "09:15",
-    unread: 0,
+    id: "CHT-B2", threadType: "buyer",
+    customerName: "Sari Dewi", avatar: "SD",
+    lastMessage: "Oke kak makasih infonya!", lastTime: "09:15", unread: 0,
     messages: [
       { id: "m1", sender: "customer", text: "Kak mau nanya, celana jeans ORD-002 ukuran 28 masih available kan?", time: "08:55", orderRef: "ORD-002" },
       { id: "m2", sender: "admin", text: "Masih available Kak Sari! Kondisinya masih bagus, ada fading natural yang memberikan kesan vintage 👖", time: "09:00" },
@@ -368,12 +422,9 @@ export const buyerChatThreads: ChatThread[] = [
     ],
   },
   {
-    id: "CHT-B3",
-    customerName: "Denny Pratama",
-    avatar: "DP",
-    lastMessage: "Oke ditunggu ya kak",
-    lastTime: "Kemarin",
-    unread: 1,
+    id: "CHT-B3", threadType: "buyer",
+    customerName: "Denny Pratama", avatar: "DP",
+    lastMessage: "Oke ditunggu ya kak", lastTime: "Kemarin", unread: 1,
     messages: [
       { id: "m1", sender: "customer", text: "Kak bisa kirim foto detail sole sneakers ORD-005 dulu sebelum bayar?", time: "Kemarin 14:00", orderRef: "ORD-005" },
       { id: "m2", sender: "admin", text: "Bisa Kak Denny! Sebentar kami foto dulu ya", time: "Kemarin 14:05" },
@@ -384,12 +435,9 @@ export const buyerChatThreads: ChatThread[] = [
 
 export const sellerChatThreads: ChatThread[] = [
   {
-    id: "CHT-S1",
-    customerName: "Hendra Wijaya",
-    avatar: "HW",
-    lastMessage: "Kapan dana saya bisa cair kak?",
-    lastTime: "11:00",
-    unread: 1,
+    id: "CHT-S1", threadType: "seller",
+    customerName: "Hendra Wijaya", avatar: "HW",
+    lastMessage: "Kapan dana saya bisa cair kak?", lastTime: "11:00", unread: 1,
     messages: [
       { id: "m1", sender: "customer", text: "Kak mau nanya soal SELL-001 kemeja oxford yang saya titip, sudah ada yang beli belum?", time: "10:45", orderRef: "SELL-001" },
       { id: "m2", sender: "admin", text: "Halo Kak Hendra! Kemeja Oxfordnya sudah terjual semua ya kak 🎉 Proses pencairan sedang kami siapkan", time: "10:52" },
@@ -397,16 +445,15 @@ export const sellerChatThreads: ChatThread[] = [
     ],
   },
   {
-    id: "CHT-S2",
-    customerName: "Rizky Firmansyah",
-    avatar: "RF",
-    lastMessage: "Siap kak, saya tunggu",
-    lastTime: "09:30",
-    unread: 0,
+    id: "CHT-S2", threadType: "seller",
+    customerName: "Rizky Firmansyah", avatar: "RF",
+    lastMessage: "Siap kak, saya tunggu", lastTime: "09:30", unread: 0,
     messages: [
       { id: "m1", sender: "customer", text: "Kak, sepatu boots SELL-003 sudah diterima tim toko?", time: "09:15", orderRef: "SELL-003" },
       { id: "m2", sender: "admin", text: "Sudah Kak Rizky! Kondisinya bagus banget. Kami sedang foto untuk upload ke platform 📸", time: "09:22" },
-      { id: "m3", sender: "customer", text: "Siap kak, saya tunggu", time: "09:30" },
+      { id: "m3", sender: "customer", text: "Berapa harga yang bisa ditawar kak untuk sepatu ini?", time: "09:28" },
+      { id: "m4", sender: "admin", text: "Kita coba nego ya kak. Harga awal Rp 350.000, bisa kami usulkan ke owner.", time: "09:29" },
+      { id: "m5", sender: "customer", text: "Siap kak, saya tunggu", time: "09:30" },
     ],
   },
 ];

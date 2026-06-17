@@ -379,7 +379,7 @@ export function ShipTab({ lang, onBack }: { lang: Lang; onBack?: () => void }) {
       <td style={{ padding: "11px 14px" }}>
         <StatusBadge status={order.shippingStatus} />
       </td>
-      <td style={{ padding: "11px 14px" }}>
+      <td className="sticky-col" style={{ padding: "11px 14px" }}>
         <button
           onClick={() => setSelectedOrder(order)}
           className="flex items-center gap-1 px-3 py-1.5 rounded-lg"
@@ -440,13 +440,14 @@ export function ShipTab({ lang, onBack }: { lang: Lang; onBack?: () => void }) {
           className="bg-white rounded-xl overflow-hidden"
           style={{ border: "1.5px solid #fde68a", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}
         >
-          <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
+          <div className="admin-table-wrapper">
+            <table className="admin-table" style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
               <thead>
                 <tr style={{ background: "#fffbeb" }}>
-                  {TABLE_COLS.map((h) => (
+                  {TABLE_COLS.map((h, hi) => (
                     <th
                       key={h}
+                      className={hi === TABLE_COLS.length - 1 ? "sticky-col" : ""}
                       style={{
                         padding: "10px 14px",
                         textAlign: "left",
@@ -492,13 +493,14 @@ export function ShipTab({ lang, onBack }: { lang: Lang; onBack?: () => void }) {
           className="bg-white rounded-xl overflow-hidden"
           style={{ border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}
         >
-          <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
+          <div className="admin-table-wrapper">
+            <table className="admin-table" style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
               <thead>
                 <tr style={{ background: "#f8fafc" }}>
-                  {TABLE_COLS.map((h) => (
+                  {TABLE_COLS.map((h, hi) => (
                     <th
                       key={h}
+                      className={hi === TABLE_COLS.length - 1 ? "sticky-col" : ""}
                       style={{
                         padding: "10px 14px",
                         textAlign: "left",

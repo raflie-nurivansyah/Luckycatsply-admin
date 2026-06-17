@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { buyerOrders, buyerChatThreads, BuyerOrder } from "./data";
+import { buyerOrders, BuyerOrder } from "./data";
 import { StatusBadge, formatRupiah } from "./DashboardTab";
 import { Lang, tr } from "./i18n";
-import { ChatSection } from "./ChatSection";
-import { X, Package, MapPin, User, CreditCard, FileText, Truck, Image, ChevronRight, ArrowLeft, MessageSquare, List } from "lucide-react";
+import { X, Package, MapPin, User, CreditCard, FileText, Truck, Image, ChevronRight, ArrowLeft } from "lucide-react";
 
 function DetailModal({ order, onClose, lang }: { order: BuyerOrder; onClose: () => void; lang: Lang }) {
   const shippingSteps = ["Menunggu", "Diproses", "Dikirim", "Tiba", "Selesai"];
@@ -94,7 +93,6 @@ function DetailModal({ order, onClose, lang }: { order: BuyerOrder; onClose: () 
 }
 
 export function BuyerTab({ lang, onBack }: { lang: Lang; onBack?: () => void }) {
-  const [activeSection, setActiveSection] = useState<"orders" | "chat">("orders");
   const [selectedOrder, setSelectedOrder] = useState<BuyerOrder | null>(null);
   const [search, setSearch] = useState("");
 
@@ -133,85 +131,63 @@ export function BuyerTab({ lang, onBack }: { lang: Lang; onBack?: () => void }) 
           <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#1a1d2e" }}>{tr("buyerManagement", lang)}</h2>
           <p style={{ color: "#6b7280", fontSize: "0.8rem", marginTop: 2 }}>{tr("buyerSubtitle", lang)}</p>
         </div>
-        {/* Section toggle */}
-        <div className="flex rounded-xl overflow-hidden" style={{ border: "1.5px solid #e5e7eb" }}>
-          <button onClick={() => setActiveSection("orders")} className="flex items-center gap-1.5 px-3 py-2"
-            style={{ background: activeSection === "orders" ? "#1e2a4a" : "#fff", color: activeSection === "orders" ? "#fff" : "#6b7280", fontSize: "0.8rem", fontWeight: 600, border: "none", cursor: "pointer" }}>
-            <List className="w-3.5 h-3.5" /> {tr("orders", lang)}
-          </button>
-          <button onClick={() => setActiveSection("chat")} className="flex items-center gap-1.5 px-3 py-2"
-            style={{ background: activeSection === "chat" ? "#1e2a4a" : "#fff", color: activeSection === "chat" ? "#fff" : "#6b7280", fontSize: "0.8rem", fontWeight: 600, border: "none", cursor: "pointer" }}>
-            <MessageSquare className="w-3.5 h-3.5" /> {tr("chat", lang)}
-            {buyerChatThreads.reduce((a, t) => a + t.unread, 0) > 0 && (
-              <span style={{ background: "#2563eb", color: "#fff", fontSize: "0.58rem", fontWeight: 700, borderRadius: 99, padding: "0 5px", marginLeft: 2 }}>
-                {buyerChatThreads.reduce((a, t) => a + t.unread, 0)}
-              </span>
-            )}
-          </button>
-        </div>
       </div>
 
-      {activeSection === "chat" ? (
-        <ChatSection threads={buyerChatThreads} type="buyer" lang={lang} />
-      ) : (
-        <>
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={tr("search", lang)}
-            className="rounded-lg px-3 py-2 outline-none w-full sm:w-64"
-            style={{ border: "1.5px solid #e5e7eb", fontSize: "0.85rem", background: "#fff", color: "#1a1d2e" }}
-            onFocus={(e) => (e.target.style.borderColor = "#2563eb")} onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")} />
+      <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={tr("search", lang)}
+        className="rounded-lg px-3 py-2 outline-none w-full sm:w-64"
+        style={{ border: "1.5px solid #e5e7eb", fontSize: "0.85rem", background: "#fff", color: "#1a1d2e" }}
+        onFocus={(e) => (e.target.style.borderColor = "#2563eb")} onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")} />
 
-          <div className="bg-white rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-            <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 900 }}>
-                <thead>
-                  <tr style={{ background: "#f8fafc" }}>
-                    {COLS.map((col) => (
-                      <th key={col.key} style={{ padding: "10px 12px", textAlign: "left", fontSize: "0.65rem", fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid rgba(0,0,0,0.06)", whiteSpace: "nowrap", minWidth: col.w }}>
-                        {col.label}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((order, i) => (
-                    <tr key={order.id} style={{ borderBottom: i < filtered.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none" }}
-                      onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "#f9fafb")}
-                      onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "")}>
-                      <td style={{ padding: "11px 12px", fontSize: "0.7rem", color: "#6b7280", fontFamily: "monospace", whiteSpace: "nowrap" }}>{order.id}</td>
-                      <td style={{ padding: "11px 12px", fontSize: "0.82rem", color: "#1a1d2e", fontWeight: 600, whiteSpace: "nowrap" }}>{order.customerName}</td>
-                      <td style={{ padding: "11px 12px", fontSize: "0.72rem", color: "#6b7280", maxWidth: 160 }}>
-                        <span style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{order.address}</span>
-                      </td>
-                      <td style={{ padding: "11px 12px", fontSize: "0.82rem", color: "#374151", whiteSpace: "nowrap" }}>{order.itemName}</td>
-                      <td style={{ padding: "11px 12px" }}><span className="px-2 py-0.5 rounded-full" style={{ background: "#e0e7ff", color: "#3730a3", fontSize: "0.65rem", fontWeight: 600, whiteSpace: "nowrap" }}>{order.itemType}</span></td>
-                      <td style={{ padding: "11px 12px", fontSize: "0.82rem", color: "#374151", fontFamily: "monospace" }}>{order.size}</td>
-                      <td style={{ padding: "11px 12px", fontSize: "0.82rem", color: "#374151", textAlign: "center" }}>{order.quantity}</td>
-                      <td style={{ padding: "11px 12px" }}><span className="px-2 py-0.5 rounded-full" style={{ background: order.paymentMethod === "QR" ? "#fef3c7" : "#d1fae5", color: order.paymentMethod === "QR" ? "#d97706" : "#059669", fontSize: "0.65rem", fontWeight: 600, whiteSpace: "nowrap" }}>{order.paymentMethod}</span></td>
-                      <td style={{ padding: "11px 12px", fontSize: "0.72rem", color: "#6b7280", maxWidth: 110 }}>
-                        <span style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{order.notes || "–"}</span>
-                      </td>
-                      <td style={{ padding: "11px 12px", fontSize: "0.7rem", color: "#374151", whiteSpace: "nowrap" }}>
-                        <div style={{ fontWeight: 600 }}>{order.shippingService}</div>
-                        <div style={{ color: "#9ca3af", fontSize: "0.65rem", fontFamily: "monospace" }}>{order.tracking !== "-" ? order.tracking : tr("noResiShort", lang)}</div>
-                      </td>
-                      <td style={{ padding: "11px 12px", fontSize: "0.72rem", color: "#6b7280", whiteSpace: "nowrap" }}>{order.orderDate}</td>
-                      <td style={{ padding: "11px 12px" }}><StatusBadge status={order.shippingStatus} /></td>
-                      <td style={{ padding: "11px 12px", position: "sticky", right: 0, background: "#fff", boxShadow: "-3px 0 8px rgba(0,0,0,0.06)" }}>
-                        <button onClick={() => setSelectedOrder(order)}
-                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg whitespace-nowrap"
-                          style={{ background: "#dbeafe", color: "#2563eb", fontSize: "0.72rem", fontWeight: 700, border: "none", cursor: "pointer" }}>
-                          {tr("showDetails", lang)} <ChevronRight className="w-3 h-3" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {filtered.length === 0 && <div className="py-12 text-center"><p style={{ color: "#9ca3af", fontSize: "0.85rem" }}>{tr("noData", lang)}</p></div>}
-          </div>
-        </>
-      )}
+      <div className="bg-white rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+        <div className="admin-table-wrapper">
+          <table className="admin-table" style={{ width: "100%", borderCollapse: "collapse", minWidth: 900 }}>
+            <thead>
+              <tr style={{ background: "#f8fafc" }}>
+                {COLS.map((col) => (
+                  <th key={col.key} className={col.key === "action" ? "sticky-col" : ""} style={{ padding: "10px 12px", textAlign: "left", fontSize: "0.65rem", fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid rgba(0,0,0,0.06)", whiteSpace: "nowrap", minWidth: col.w }}>
+                    {col.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((order, i) => (
+                <tr key={order.id} style={{ borderBottom: i < filtered.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none" }}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "#f9fafb")}
+                  onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "")}>
+                  <td style={{ padding: "11px 12px", fontSize: "0.7rem", color: "#6b7280", fontFamily: "monospace", whiteSpace: "nowrap" }}>{order.id}</td>
+                  <td style={{ padding: "11px 12px", fontSize: "0.82rem", color: "#1a1d2e", fontWeight: 600, whiteSpace: "nowrap" }}>{order.customerName}</td>
+                  <td style={{ padding: "11px 12px", fontSize: "0.72rem", color: "#6b7280", maxWidth: 160 }}>
+                    <span style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{order.address}</span>
+                  </td>
+                  <td style={{ padding: "11px 12px", fontSize: "0.82rem", color: "#374151", whiteSpace: "nowrap" }}>{order.itemName}</td>
+                  <td style={{ padding: "11px 12px" }}><span className="px-2 py-0.5 rounded-full" style={{ background: "#e0e7ff", color: "#3730a3", fontSize: "0.65rem", fontWeight: 600, whiteSpace: "nowrap" }}>{order.itemType}</span></td>
+                  <td style={{ padding: "11px 12px", fontSize: "0.82rem", color: "#374151", fontFamily: "monospace" }}>{order.size}</td>
+                  <td style={{ padding: "11px 12px", fontSize: "0.82rem", color: "#374151", textAlign: "center" }}>{order.quantity}</td>
+                  <td style={{ padding: "11px 12px" }}><span className="px-2 py-0.5 rounded-full" style={{ background: order.paymentMethod === "QR" ? "#fef3c7" : "#d1fae5", color: order.paymentMethod === "QR" ? "#d97706" : "#059669", fontSize: "0.65rem", fontWeight: 600, whiteSpace: "nowrap" }}>{order.paymentMethod}</span></td>
+                  <td style={{ padding: "11px 12px", fontSize: "0.72rem", color: "#6b7280", maxWidth: 110 }}>
+                    <span style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{order.notes || "–"}</span>
+                  </td>
+                  <td style={{ padding: "11px 12px", fontSize: "0.7rem", color: "#374151", whiteSpace: "nowrap" }}>
+                    <div style={{ fontWeight: 600 }}>{order.shippingService}</div>
+                    <div style={{ color: "#9ca3af", fontSize: "0.65rem", fontFamily: "monospace" }}>{order.tracking !== "-" ? order.tracking : tr("noResiShort", lang)}</div>
+                  </td>
+                  <td style={{ padding: "11px 12px", fontSize: "0.72rem", color: "#6b7280", whiteSpace: "nowrap" }}>{order.orderDate}</td>
+                  <td style={{ padding: "11px 12px" }}><StatusBadge status={order.shippingStatus} /></td>
+                  <td className="sticky-col" style={{ padding: "11px 12px" }}>
+                    <button onClick={() => setSelectedOrder(order)}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg whitespace-nowrap"
+                      style={{ background: "#dbeafe", color: "#2563eb", fontSize: "0.72rem", fontWeight: 700, border: "none", cursor: "pointer" }}>
+                      {tr("showDetails", lang)} <ChevronRight className="w-3 h-3" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {filtered.length === 0 && <div className="py-12 text-center"><p style={{ color: "#9ca3af", fontSize: "0.85rem" }}>{tr("noData", lang)}</p></div>}
+      </div>
 
       {selectedOrder && <DetailModal order={selectedOrder} onClose={() => setSelectedOrder(null)} lang={lang} />}
     </div>

@@ -16,7 +16,7 @@ type UserRole = "admin" | "buyer_admin" | "seller_admin" | "marketing_admin";
 type RangeKey = "7d" | "14d" | "21d" | "28d" | "monthly" | "yearly" | "all";
 
 interface DashboardTabProps {
-  onNavigate?: (tab: "buyer" | "seller") => void;
+  onNavigate?: (tab: "buyer" | "seller" | "history") => void;
   userRole: UserRole;
   lang: Lang;
 }
@@ -531,7 +531,7 @@ export function DashboardTab({ onNavigate, userRole, lang }: DashboardTabProps) 
             </button>
             {canSeeSales && (
               <button
-                onClick={() => onNavigate?.("buyer")}
+                onClick={() => onNavigate?.("history")}
                 className="flex items-center gap-1"
                 style={{ background: "none", border: "none", cursor: "pointer", color: "#2563eb", fontSize: "0.78rem", fontWeight: 600 }}
               >
@@ -540,8 +540,8 @@ export function DashboardTab({ onNavigate, userRole, lang }: DashboardTabProps) 
             )}
           </div>
         </div>
-        <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 640 }}>
+        <div className="admin-table-wrapper">
+          <table className="admin-table" style={{ width: "100%", borderCollapse: "collapse", minWidth: 640 }}>
             <thead>
               <tr style={{ background: "#f8fafc" }}>
                 {TABLE_COLS.map((h) => (

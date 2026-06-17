@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { sellerItems, sellerChatThreads, SellerItem } from "./data";
+import { sellerItems, SellerItem } from "./data";
 import { formatRupiah } from "./DashboardTab";
 import { Lang, tr } from "./i18n";
-import { ChatSection } from "./ChatSection";
-import { CheckSquare, Square, CheckCircle2, ChevronRight, ArrowLeft, X, Package, MapPin, User, FileText, Image, List, MessageSquare } from "lucide-react";
+import { CheckSquare, Square, CheckCircle2, ChevronRight, ArrowLeft, X, Package, MapPin, User, FileText, Image } from "lucide-react";
 
 function SellerDetailModal({ item, onClose, lang }: { item: SellerItem; onClose: () => void; lang: Lang }) {
   return (
@@ -76,7 +75,6 @@ export function SellerTab({ lang, onBack }: { lang: Lang; onBack?: () => void })
   const [items, setItems] = useState(sellerItems);
   const [selectedItem, setSelectedItem] = useState<SellerItem | null>(null);
   const [search, setSearch] = useState("");
-  const [activeSection, setActiveSection] = useState<"orders" | "chat">("orders");
 
   const filtered = items.filter(
     (s) => s.customerName.toLowerCase().includes(search.toLowerCase()) ||
@@ -115,97 +113,77 @@ export function SellerTab({ lang, onBack }: { lang: Lang; onBack?: () => void })
           <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#1a1d2e" }}>{tr("sellerManagement", lang)}</h2>
           <p style={{ color: "#6b7280", fontSize: "0.8rem", marginTop: 2 }}>{tr("sellerSubtitle", lang)}</p>
         </div>
-        <div className="flex rounded-xl overflow-hidden" style={{ border: "1.5px solid #e5e7eb" }}>
-          <button onClick={() => setActiveSection("orders")} className="flex items-center gap-1.5 px-3 py-2"
-            style={{ background: activeSection === "orders" ? "#1e2a4a" : "#fff", color: activeSection === "orders" ? "#fff" : "#6b7280", fontSize: "0.8rem", fontWeight: 600, border: "none", cursor: "pointer" }}>
-            <List className="w-3.5 h-3.5" /> {tr("orders", lang)}
-          </button>
-          <button onClick={() => setActiveSection("chat")} className="flex items-center gap-1.5 px-3 py-2"
-            style={{ background: activeSection === "chat" ? "#1e2a4a" : "#fff", color: activeSection === "chat" ? "#fff" : "#6b7280", fontSize: "0.8rem", fontWeight: 600, border: "none", cursor: "pointer" }}>
-            <MessageSquare className="w-3.5 h-3.5" /> {tr("chat", lang)}
-            {sellerChatThreads.reduce((a, t) => a + t.unread, 0) > 0 && (
-              <span style={{ background: "#7c3aed", color: "#fff", fontSize: "0.58rem", fontWeight: 700, borderRadius: 99, padding: "0 5px", marginLeft: 2 }}>
-                {sellerChatThreads.reduce((a, t) => a + t.unread, 0)}
-              </span>
-            )}
-          </button>
+      </div>
+
+      {/* Summary */}
+      <div className="flex gap-3 flex-wrap">
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "#d1fae5", border: "1px solid #6ee7b7" }}>
+          <CheckCircle2 className="w-4 h-4" style={{ color: "#059669" }} />
+          <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "#065f46" }}>{tr("disbursed", lang)}: {disbursedCount}</span>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "#fef3c7", border: "1px solid #fde68a" }}>
+          <Square className="w-4 h-4" style={{ color: "#d97706" }} />
+          <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "#92400e" }}>{tr("notDisbursed", lang)}: {pendingCount}</span>
         </div>
       </div>
 
-      {activeSection === "chat" ? (
-        <ChatSection threads={sellerChatThreads} type="seller" lang={lang} />
-      ) : (
-        <>
-          {/* Summary */}
-          <div className="flex gap-3 flex-wrap">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "#d1fae5", border: "1px solid #6ee7b7" }}>
-              <CheckCircle2 className="w-4 h-4" style={{ color: "#059669" }} />
-              <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "#065f46" }}>{tr("disbursed", lang)}: {disbursedCount}</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "#fef3c7", border: "1px solid #fde68a" }}>
-              <Square className="w-4 h-4" style={{ color: "#d97706" }} />
-              <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "#92400e" }}>{tr("notDisbursed", lang)}: {pendingCount}</span>
-            </div>
-          </div>
+      <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={tr("search", lang)}
+        className="rounded-lg px-3 py-2 outline-none w-full sm:w-64"
+        style={{ border: "1.5px solid #e5e7eb", fontSize: "0.85rem", background: "#fff", color: "#1a1d2e" }}
+        onFocus={(e) => (e.target.style.borderColor = "#2563eb")} onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")} />
 
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={tr("search", lang)}
-            className="rounded-lg px-3 py-2 outline-none w-full sm:w-64"
-            style={{ border: "1.5px solid #e5e7eb", fontSize: "0.85rem", background: "#fff", color: "#1a1d2e" }}
-            onFocus={(e) => (e.target.style.borderColor = "#2563eb")} onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")} />
-
-          <div className="bg-white rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-            <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
-                <thead>
-                  <tr style={{ background: "#f8fafc" }}>
-                    {COLS.map((col) => (
-                      <th key={col.key} style={{ padding: "10px 12px", textAlign: "left", fontSize: "0.65rem", fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid rgba(0,0,0,0.06)", whiteSpace: "nowrap", minWidth: col.w }}>
-                        {col.label}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((item, i) => (
-                    <tr key={item.id} style={{ borderBottom: i < filtered.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none", background: item.disbursed ? "#f0fdf4" : "transparent" }}
-                      onMouseEnter={(e) => { if (!item.disbursed) (e.currentTarget as HTMLElement).style.background = "#f9fafb"; }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = item.disbursed ? "#f0fdf4" : ""; }}>
-                      <td style={{ padding: "11px 12px", fontSize: "0.7rem", color: "#6b7280", fontFamily: "monospace", whiteSpace: "nowrap" }}>{item.id}</td>
-                      <td style={{ padding: "11px 12px", fontSize: "0.82rem", color: "#1a1d2e", fontWeight: 600, whiteSpace: "nowrap" }}>{item.customerName}</td>
-                      <td style={{ padding: "11px 12px", fontSize: "0.72rem", color: "#6b7280", maxWidth: 160 }}>
-                        <span style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.address}</span>
-                      </td>
-                      <td style={{ padding: "11px 12px", fontSize: "0.82rem", color: "#374151", whiteSpace: "nowrap" }}>{item.itemName}</td>
-                      <td style={{ padding: "11px 12px" }}><span className="px-2 py-0.5 rounded-full" style={{ background: "#e0e7ff", color: "#3730a3", fontSize: "0.65rem", fontWeight: 600 }}>{item.itemType}</span></td>
-                      <td style={{ padding: "11px 12px", fontSize: "0.82rem", color: "#374151", fontFamily: "monospace" }}>{item.size}</td>
-                      <td style={{ padding: "11px 12px", fontSize: "0.82rem", color: "#374151", textAlign: "center" }}>{item.quantity}</td>
-                      <td style={{ padding: "11px 12px", fontSize: "0.82rem", color: "#1a1d2e", fontWeight: 600, whiteSpace: "nowrap" }}>
-                        {formatRupiah(item.sellingPrice * item.quantity)}
-                        {item.quantity > 1 && <div style={{ fontSize: "0.65rem", color: "#9ca3af", fontWeight: 400 }}>@{formatRupiah(item.sellingPrice)}</div>}
-                      </td>
-                      <td style={{ padding: "11px 12px", fontSize: "0.72rem", color: "#6b7280", whiteSpace: "nowrap" }}>{item.submitDate}</td>
-                      <td style={{ padding: "11px 12px" }}>
-                        <button onClick={() => toggleDisbursed(item.id)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg whitespace-nowrap"
-                          style={{ background: item.disbursed ? "#d1fae5" : "#f3f4f6", border: "none", cursor: "pointer", color: item.disbursed ? "#059669" : "#6b7280", fontSize: "0.72rem", fontWeight: 600 }}>
-                          {item.disbursed ? <><CheckSquare className="w-3 h-3" /> {tr("disbursed", lang)}</> : <><Square className="w-3 h-3" /> {tr("notDisbursed", lang)}</>}
-                        </button>
-                      </td>
-                      <td style={{ padding: "11px 12px", position: "sticky", right: 0, background: "#fff", boxShadow: "-3px 0 8px rgba(0,0,0,0.06)" }}>
-                        <button onClick={() => setSelectedItem(item)}
-                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg whitespace-nowrap"
-                          style={{ background: "#ede9fe", color: "#7c3aed", fontSize: "0.72rem", fontWeight: 700, border: "none", cursor: "pointer" }}>
-                          {tr("showDetails", lang)} <ChevronRight className="w-3 h-3" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {filtered.length === 0 && <div className="py-12 text-center"><p style={{ color: "#9ca3af", fontSize: "0.85rem" }}>{tr("noData", lang)}</p></div>}
-          </div>
-        </>
-      )}
+      <div className="bg-white rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+        <div className="admin-table-wrapper">
+          <table className="admin-table" style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
+            <thead>
+              <tr style={{ background: "#f8fafc" }}>
+                {COLS.map((col) => (
+                  <th key={col.key} className={col.key === "action" ? "sticky-col" : ""} style={{ padding: "10px 12px", textAlign: "left", fontSize: "0.65rem", fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid rgba(0,0,0,0.06)", whiteSpace: "nowrap", minWidth: col.w }}>
+                    {col.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((item, i) => (
+                <tr key={item.id} className={item.disbursed ? "row-disbursed" : ""}
+                  style={{ borderBottom: i < filtered.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none", transition: "background 0.15s" }}
+                  onMouseEnter={(e) => { if (!item.disbursed) (e.currentTarget as HTMLElement).style.background = "#f9fafb"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = ""; }}>
+                  <td style={{ padding: "11px 12px", fontSize: "0.7rem", color: "#6b7280", fontFamily: "monospace", whiteSpace: "nowrap" }}>{item.id}</td>
+                  <td style={{ padding: "11px 12px", fontSize: "0.82rem", color: "#1a1d2e", fontWeight: 600, whiteSpace: "nowrap" }}>{item.customerName}</td>
+                  <td style={{ padding: "11px 12px", fontSize: "0.72rem", color: "#6b7280", maxWidth: 160 }}>
+                    <span style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.address}</span>
+                  </td>
+                  <td style={{ padding: "11px 12px", fontSize: "0.82rem", color: "#374151", whiteSpace: "nowrap" }}>{item.itemName}</td>
+                  <td style={{ padding: "11px 12px" }}><span className="px-2 py-0.5 rounded-full" style={{ background: "#e0e7ff", color: "#3730a3", fontSize: "0.65rem", fontWeight: 600 }}>{item.itemType}</span></td>
+                  <td style={{ padding: "11px 12px", fontSize: "0.82rem", color: "#374151", fontFamily: "monospace" }}>{item.size}</td>
+                  <td style={{ padding: "11px 12px", fontSize: "0.82rem", color: "#374151", textAlign: "center" }}>{item.quantity}</td>
+                  <td style={{ padding: "11px 12px", fontSize: "0.82rem", color: "#1a1d2e", fontWeight: 600, whiteSpace: "nowrap" }}>
+                    {formatRupiah(item.sellingPrice * item.quantity)}
+                    {item.quantity > 1 && <div style={{ fontSize: "0.65rem", color: "#9ca3af", fontWeight: 400 }}>@{formatRupiah(item.sellingPrice)}</div>}
+                  </td>
+                  <td style={{ padding: "11px 12px", fontSize: "0.72rem", color: "#6b7280", whiteSpace: "nowrap" }}>{item.submitDate}</td>
+                  <td style={{ padding: "11px 12px" }}>
+                    <button onClick={() => toggleDisbursed(item.id)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg whitespace-nowrap"
+                      style={{ background: item.disbursed ? "#d1fae5" : "#f3f4f6", border: "none", cursor: "pointer", color: item.disbursed ? "#059669" : "#6b7280", fontSize: "0.72rem", fontWeight: 600 }}>
+                      {item.disbursed ? <><CheckSquare className="w-3 h-3" /> {tr("disbursed", lang)}</> : <><Square className="w-3 h-3" /> {tr("notDisbursed", lang)}</>}
+                    </button>
+                  </td>
+                  <td className="sticky-col" style={{ padding: "11px 12px" }}>
+                    <button onClick={() => setSelectedItem(item)}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg whitespace-nowrap"
+                      style={{ background: "#ede9fe", color: "#7c3aed", fontSize: "0.72rem", fontWeight: 700, border: "none", cursor: "pointer" }}>
+                      {tr("showDetails", lang)} <ChevronRight className="w-3 h-3" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {filtered.length === 0 && <div className="py-12 text-center"><p style={{ color: "#9ca3af", fontSize: "0.85rem" }}>{tr("noData", lang)}</p></div>}
+      </div>
 
       {selectedItem && <SellerDetailModal item={selectedItem} onClose={() => setSelectedItem(null)} lang={lang} />}
     </div>
